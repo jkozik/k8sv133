@@ -288,5 +288,8 @@ knode204.kozik.net   385m         19%      1310Mi          8%
 knode205.kozik.net   58m          2%       507Mi           3%
 knode206.kozik.net   4m           0%       444Mi           6%
 ```
-
+# References
+- [Installing the first node of a Kubernetes cluster with kubeadm.](https://medium.com/@Kubway/installing-the-first-node-of-a-kubernetes-cluster-with-kubeadm-c116ab0cc38b)
+- [https://medium.com/@Kubway/installing-the-first-node-of-a-kubernetes-cluster-with-kubeadm-c116ab0cc38b](https://medium.com/@Kubway/installing-and-understanding-calico-on-a-kubernetes-cluster-337fa7cd8ba2)
+- [How To Setup Kubernetes Cluster Using Kubeadm](https://devopscube.com/setup-kubernetes-cluster-kubeadm/)
 
