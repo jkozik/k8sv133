@@ -215,5 +215,78 @@ jkozik@knode204:~$   mkdir -p $HOME/.kube
 jkozik@knode204:~$
 ```
 
+## Installing Calico
+```
+CALICO_VERSION=3.30.2 # Choose one there https://github.com/projectcalico/calico/tags
+# Operator installation
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v$CALICO_VERSION/manifests/tigera-operator.yaml
+# Get model for creating custom resources
+curl  https://raw.githubusercontent.com/projectcalico/calico/v$CALICO_VERSION/manifests/custom-resources.yaml -O
+jkozik@knode204:~$ kubectl -n kube-system get pod -l component=kube-controller-manager -o yaml | grep -i cluster-cidr
+      - --cluster-cidr=10.244.0.0/16
+sed -i 's+192.168.0.0/16+10.244.0.0/16+' custom-resources.yaml
+k apply -f custom-resources.yaml
+watch kubectl get pods -n calico-system
+kubectl patch installation default --type=merge -p '{"spec": {"calicoNetwork": {"bgp": "Disabled"}}}'
+jkozik@knode204:~$ kubectl get ippools
+NAME                  AGE
+default-ipv4-ippool   5m21s
+jkozik@knode204:~$ kubectl describe ippools default-ipv4-ippool
+Name:         default-ipv4-ippool
+Namespace:
+Labels:       app.kubernetes.io/managed-by=tigera-operator
+Annotations:  <none>
+API Version:  projectcalico.org/v3
+Kind:         IPPool
+Metadata:
+  Creation Timestamp:  2025-06-22T20:47:50Z
+  Generation:          1
+  Resource Version:    18148
+  UID:                 818122ba-b3aa-40a7-8588-427982288acc
+Spec:
+  Allowed Uses:
+    Workload
+    Tunnel
+  Assignment Mode:  Automatic
+  Block Size:       26
+  Cidr:             10.244.0.0/16
+  Ipip Mode:        Never
+  Nat Outgoing:     true
+  Node Selector:    all()
+  Vxlan Mode:       CrossSubnet
+Events:             <none>
+jkozik@knode204:~$
+```
+
+## Installing calicoctl
+```
+curl -L https://github.com/projectcalico/calico/releases/download/v3.30.2/calicoctl-linux-amd64 -o calicoctl
+chmod +x ./calicoctl
+sudo mv ./calicoctl /usr/local/bin/
+jkozik@knode204:~$ calicoctl ipam show --show-configuration
++--------------------+-------+
+|      PROPERTY      | VALUE |
++--------------------+-------+
+| StrictAffinity     | false |
+| AutoAllocateBlocks | true  |
+| MaxBlocksPerHost   |     0 |
++--------------------+-------+
+jkozik@knode204:~$
+```
+## /etc/host on each node
+```
+192.168.100.204 knode204
+192.168.100.205 knode205
+192.168.100.206 knode206
+```
+## Setup Kubernetes Metrics Server
+```
+kubectl apply -f https://raw.githubusercontent.com/techiescamp/cka-certification-guide/refs/heads/main/lab-setup/manifests/metrics-server/metrics-server.yaml
+jkozik@knode204:~$ kubectl top nodes
+NAME                 CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)
+knode204.kozik.net   385m         19%      1310Mi          8%
+knode205.kozik.net   58m          2%       507Mi           3%
+knode206.kozik.net   4m           0%       444Mi           6%
+```
 
 
