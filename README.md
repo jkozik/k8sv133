@@ -1,4 +1,4 @@
-# k8sv133
+# Setup Kubernetes v1.33 using kubeadm onto Ubuntu 25.04
 Notes on setup of Kubernetes cluster v1.33 on Ubuntu using kubeadm.
 
 Following the [article](https://medium.com/@Kubway/installing-the-first-node-of-a-kubernetes-cluster-with-kubeadm-c116ab0cc38b) by [Kubway](https://medium.com/@Kubway), I installed [Kubernetes v1.33[(https://kubernetes.io/blog/2025/04/23/kubernetes-v1-33-release/) on Ubuntu 25.04 using [kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/). 
