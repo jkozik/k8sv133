@@ -288,6 +288,68 @@ knode204.kozik.net   385m         19%      1310Mi          8%
 knode205.kozik.net   58m          2%       507Mi           3%
 knode206.kozik.net   4m           0%       444Mi           6%
 ```
+## On controller, install helm
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+jkozik@knode206:~$ helm version
+version.BuildInfo{Version:"v3.18.3", GitCommit:"6838ebcf265a3842d1433956e8a622e3290cf324", GitTreeState:"clean", GoVersion:"go1.24.4"}
+jkozik@knode206:~$
+```
+## Install NFS
+Create an NFS storage class.  Following the instructions found at [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner#with-helm), install helm, apply the yaml, and verify the nfs-client storage class.
+```
+jkozik@knode206:~$ showmount -e 192.168.101.152
+Export list for 192.168.101.152:
+/home/nfs/pv-2            192.168.100.0/24
+/home/nfs/pv-1            192.168.100.0/24
+/home/nfs/zabbix/enc      192.168.100.0/24
+/home/weewx/nfs/archive   192.168.100.0/24
+/home/weewx/nfs/conf      192.168.100.0/24
+/home/nfs/kubedata        192.168.100.0/24
+/home/weather/public_html 192.168.100.0/24
+/home/wjr/public_html     192.168.100.0/24
+/var/nfsshare             192.168.100.0/24
+
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --set nfs.server=192.168.101.152 \
+    --set nfs.path=/home/nfs/kubedata
+```
+```
+jkozik@knode204:~$  showmount -e 192.168.101.152
+Export list for 192.168.101.152:
+/home/nfs/pv-2            192.168.100.0/24
+/home/nfs/pv-1            192.168.100.0/24
+/home/nfs/zabbix/enc      192.168.100.0/24
+/home/weewx/nfs/archive   192.168.100.0/24
+/home/weewx/nfs/conf      192.168.100.0/24
+/home/nfs/kubedata        192.168.100.0/24
+/home/weather/public_html 192.168.100.0/24
+/home/wjr/public_html     192.168.100.0/24
+/var/nfsshare             192.168.100.0/24
+jkozik@knode204:~$ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+"nfs-subdir-external-provisioner" has been added to your repositories
+jkozik@knode204:~$ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --set nfs.server=192.168.101.152 \
+    --set nfs.path=/home/nfs/kubedata
+NAME: nfs-subdir-external-provisioner
+LAST DEPLOYED: Tue Jun 24 10:28:01 2025
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+jkozik@knode204:~$
+jkozik@knode204:~$ kubectl get storageclass
+NAME         PROVISIONER                                     RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs-client   cluster.local/nfs-subdir-external-provisioner   Delete          Immediate           true                   63s
+jkozik@knode204:~$
+```
+
+
+
+
 # References
 - [Installing the first node of a Kubernetes cluster with kubeadm.](https://medium.com/@Kubway/installing-the-first-node-of-a-kubernetes-cluster-with-kubeadm-c116ab0cc38b)
 - [https://medium.com/@Kubway/installing-the-first-node-of-a-kubernetes-cluster-with-kubeadm-c116ab0cc38b](https://medium.com/@Kubway/installing-and-understanding-calico-on-a-kubernetes-cluster-337fa7cd8ba2)
